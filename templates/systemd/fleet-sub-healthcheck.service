@@ -1,0 +1,6 @@
+[Unit]
+Description=Subscription service health check
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fleet-sub-healthcheck

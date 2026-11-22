@@ -1,0 +1,17 @@
+# Runtime data and secrets - never commit real ones.
+payload.json
+userinfo.json
+traffic_state.json
+password.json
+webshare.key
+*.key
+*.crt
+*.pem
+status.json
+history.sqlite3
+sessions.json
+links.json
+collector_state.json
+user_traffic_state.json
+events_state.json
+__pycache__/

@@ -1,0 +1,6 @@
+[Unit]
+Description=Accumulate WAN counters into the subscription traffic state
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/fleet-subscriptions/traffic-account.py

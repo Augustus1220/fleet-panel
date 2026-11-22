@@ -1,0 +1,37 @@
+# Hysteria2 residential instance: all traffic exits via the residential
+# HTTP proxy (TCP only - the proxy cannot carry UDP; see docs/channels.md).
+listen: 0.0.0.0:2054
+
+tls:
+  cert: /opt/fleet-hy2/public-tls.crt
+  key: /opt/fleet-hy2/public-tls.key
+
+auth:
+  type: userpass
+  userpass:
+    alice_mac: "PASSWORD_ALICE_MAC"
+    alice_desktop: "PASSWORD_ALICE_DESKTOP"
+    alice_iphone: "PASSWORD_ALICE_IPHONE"
+    bob: "PASSWORD_BOB"
+
+outbounds:
+  - name: webshare
+    type: http
+    http:
+      url: http://RESIDENTIAL_PROXY_USER:RESIDENTIAL_PROXY_PASS@203.0.113.10:8080
+  - name: direct
+    type: direct
+
+acl:
+  inline:
+    - webshare(all)
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.microsoft.com
+    rewriteHost: true
+
+trafficStats:
+  listen: 127.0.0.1:29004
+  secret: "TRAFFIC_STATS_SECRET"

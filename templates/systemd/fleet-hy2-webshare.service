@@ -1,0 +1,13 @@
+[Unit]
+Description=Hysteria2 residential chain (UDP 2054)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/hysteria server -c /opt/fleet-hy2-webshare/server.yaml
+Restart=always
+RestartSec=3
+LimitNOFILE=1048576
+
+[Install]
+WantedBy=multi-user.target

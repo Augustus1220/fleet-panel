@@ -1,0 +1,10 @@
+[Unit]
+Description=Run subscription health check every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Unit=fleet-sub-healthcheck.service
+
+[Install]
+WantedBy=timers.target

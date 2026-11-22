@@ -1,0 +1,6 @@
+[Unit]
+Description=Run fleet panel collector
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/fleet-panel/collect.py

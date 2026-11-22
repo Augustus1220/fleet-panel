@@ -1,0 +1,19 @@
+[Unit]
+Description=Fleet read-only status panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=fleet-panel
+Group=fleet-panel
+ExecStart=/usr/bin/python3 /usr/local/lib/fleet-panel/panel.py
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/fleet-panel
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

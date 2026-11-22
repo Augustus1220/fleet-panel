@@ -1,0 +1,26 @@
+# Hysteria2 main instance: direct exit, UDP 443 (+ port hopping 20000-30000 -> 443)
+listen: 0.0.0.0:443
+
+tls:
+  cert: /opt/fleet-hy2/public-tls.crt
+  key: /opt/fleet-hy2/public-tls.key
+
+auth:
+  type: userpass
+  userpass:
+    alice_mac: "PASSWORD_ALICE_MAC"
+    alice_desktop: "PASSWORD_ALICE_DESKTOP"
+    alice_iphone: "PASSWORD_ALICE_IPHONE"
+    bob: "PASSWORD_BOB"
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.microsoft.com
+    rewriteHost: true
+
+# Per-account traffic accounting (read by the panel collector).
+# Keep the secret private; the API binds to localhost only.
+trafficStats:
+  listen: 127.0.0.1:29003
+  secret: "TRAFFIC_STATS_SECRET"

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run fleet panel collector every 2 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+AccuracySec=10s
+Unit=fleet-panel-collect.service
+
+[Install]
+WantedBy=timers.target

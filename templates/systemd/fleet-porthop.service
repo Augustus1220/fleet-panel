@@ -1,0 +1,12 @@
+[Unit]
+Description=HY2 port hopping redirect (UDP 20000-30000 -> 443)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "iptables -t nat -C PREROUTING -p udp --dport 20000:30000 -j REDIRECT --to-ports 443 2>/dev/null || iptables -t nat -A PREROUTING -p udp --dport 20000:30000 -j REDIRECT --to-ports 443"
+
+[Install]
+WantedBy=multi-user.target

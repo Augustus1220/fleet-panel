@@ -1,0 +1,356 @@
+{
+  "api": {
+    "services": [
+      "StatsService"
+    ],
+    "tag": "api"
+  },
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": 2053,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "email": "alice_mac",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC"
+          },
+          {
+            "email": "alice_desktop",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP"
+          },
+          {
+            "email": "alice_iphone",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE"
+          },
+          {
+            "email": "bob",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB"
+          }
+        ],
+        "decryption": "none"
+      },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/opt/fleet-hy2/public-tls.crt",
+              "keyFile": "/opt/fleet-hy2/public-tls.key"
+            }
+          ],
+          "minVersion": "1.2",
+          "serverName": "node.example.com"
+        }
+      },
+      "tag": "vless-direct"
+    },
+    {
+      "listen": "0.0.0.0",
+      "port": 2054,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "email": "alice_mac",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC"
+          },
+          {
+            "email": "alice_desktop",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP"
+          },
+          {
+            "email": "alice_iphone",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE"
+          },
+          {
+            "email": "bob",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB"
+          }
+        ],
+        "decryption": "none"
+      },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/opt/fleet-hy2/public-tls.crt",
+              "keyFile": "/opt/fleet-hy2/public-tls.key"
+            }
+          ],
+          "minVersion": "1.2",
+          "serverName": "node.example.com"
+        }
+      },
+      "tag": "vless-webshare"
+    },
+    {
+      "listen": "0.0.0.0",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "email": "mac",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC"
+          },
+          {
+            "email": "mac-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC_WS"
+          },
+          {
+            "email": "desktop",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP"
+          },
+          {
+            "email": "desktop-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP_WS"
+          },
+          {
+            "email": "iphone",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE"
+          },
+          {
+            "email": "iphone-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE_WS"
+          },
+          {
+            "email": "bob",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB"
+          },
+          {
+            "email": "bob-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB_WS"
+          }
+        ],
+        "decryption": "none"
+      },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "realitySettings": {
+          "dest": "www.microsoft.com:443",
+          "privateKey": "REALITY_PRIVATE_KEY",
+          "serverNames": [
+            "www.microsoft.com"
+          ],
+          "shortIds": [
+            "SHORT_ID_HEX"
+          ],
+          "show": false,
+          "xver": 0
+        },
+        "security": "reality"
+      },
+      "tag": "vless-reality"
+    },
+    {
+      "listen": "0.0.0.0",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "email": "mac",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC"
+          },
+          {
+            "email": "mac-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_MAC_WS"
+          },
+          {
+            "email": "desktop",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP"
+          },
+          {
+            "email": "desktop-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_DESKTOP_WS"
+          },
+          {
+            "email": "iphone",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE"
+          },
+          {
+            "email": "iphone-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_ALICE_IPHONE_WS"
+          },
+          {
+            "email": "bob",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB"
+          },
+          {
+            "email": "bob-ws",
+            "flow": "xtls-rprx-vision",
+            "id": "UUID_BOB_WS"
+          }
+        ],
+        "decryption": "none"
+      },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "realitySettings": {
+          "dest": "gateway.icloud.com:443",
+          "privateKey": "REALITY_PRIVATE_KEY",
+          "serverNames": [
+            "gateway.icloud.com"
+          ],
+          "shortIds": [
+            "SHORT_ID_HEX"
+          ],
+          "show": false,
+          "xver": 0
+        },
+        "security": "reality"
+      },
+      "tag": "vless-reality-alt"
+    },
+    {
+      "listen": "127.0.0.1",
+      "port": 10085,
+      "protocol": "dokodemo-door",
+      "settings": {
+        "address": "127.0.0.1"
+      },
+      "tag": "api"
+    }
+  ],
+  "log": {
+    "loglevel": "warning"
+  },
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    },
+    {
+      "protocol": "http",
+      "settings": {
+        "servers": [
+          {
+            "address": "203.0.113.10",
+            "port": 8080,
+            "users": [
+              {
+                "pass": "RESIDENTIAL_PROXY_PASS",
+                "user": "RESIDENTIAL_PROXY_USER"
+              }
+            ]
+          }
+        ]
+      },
+      "tag": "webshare"
+    }
+  ],
+  "policy": {
+    "levels": {
+      "0": {
+        "statsUserDownlink": true,
+        "statsUserUplink": true
+      }
+    },
+    "system": {
+      "statsInboundDownlink": true,
+      "statsInboundUplink": true,
+      "statsOutboundDownlink": true,
+      "statsOutboundUplink": true
+    }
+  },
+  "routing": {
+    "rules": [
+      {
+        "outboundTag": "webshare",
+        "type": "field",
+        "user": [
+          "mac-ws",
+          "desktop-ws",
+          "iphone-ws",
+          "bob-ws"
+        ]
+      },
+      {
+        "inboundTag": [
+          "vless-webshare"
+        ],
+        "outboundTag": "webshare",
+        "type": "field"
+      },
+      {
+        "outboundTag": "block",
+        "protocol": [
+          "bittorrent"
+        ],
+        "type": "field"
+      },
+      {
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api",
+        "type": "field"
+      }
+    ]
+  },
+  "stats": {}
+}

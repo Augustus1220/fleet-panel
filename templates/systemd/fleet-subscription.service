@@ -1,0 +1,21 @@
+[Unit]
+Description=Private HTTPS subscription hosting
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=fleet-sub
+Group=fleet-sub
+ExecStartPre=+/usr/bin/install -m 0640 -o root -g fleet-sub /opt/fleet-hy2/public-tls.crt /etc/fleet-subscriptions/fullchain.pem
+ExecStartPre=+/usr/bin/install -m 0640 -o root -g fleet-sub /opt/fleet-hy2/public-tls.key /etc/fleet-subscriptions/privkey.pem
+ExecStart=/usr/bin/python3 /usr/local/lib/fleet-subscriptions/server.py
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/etc/fleet-subscriptions
+ProtectHome=true
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
