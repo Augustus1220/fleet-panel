@@ -1269,5 +1269,5 @@ class Server(http.server.ThreadingHTTPServer):
 context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 context.minimum_version = ssl.TLSVersion.TLSv1_2
 context.load_cert_chain(CFG['cert'], CFG['key'])
-server = Server(('0.0.0.0', int(CFG['port'])), Handler)
+server = Server((CFG.get('bind', '0.0.0.0'), int(CFG['port'])), Handler)
 server.serve_forever()

@@ -37,8 +37,11 @@ prompts/       给 AI agent 的部署 / 加账号 / 换出口 / 健康检查提�
 ## 快速开始
 
 1. 读 [docs/architecture.md](docs/architecture.md) 了解整体设计；
-2. 按 [docs/deployment.md](docs/deployment.md) 在一台新 VPS 上部署，
-   或把 [prompts/deploy-new-node.md](prompts/deploy-new-node.md) 填好
+2. 一键安装：把子域名 A 记录指向一台干净的 Ubuntu 24.04 VPS，然后
+   `sudo ./install.sh --domain node.example.com`（见
+   [docs/installer.md](docs/installer.md)）；或按
+   [docs/deployment.md](docs/deployment.md) 手工部署，或把
+   [prompts/deploy-new-node.md](prompts/deploy-new-node.md) 填好
    交给你的 AI agent 执行；
 3. 部署后用 [prompts/health-check.md](prompts/health-check.md) 做例
    行检查。
