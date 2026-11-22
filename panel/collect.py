@@ -139,6 +139,8 @@ def _hy2_one(conf_path):
     text = conf_path.read_text()
     m = re.search(r'trafficStats:\s*\n\s*listen:\s*127\.0\.0\.1:(\d+)\s*\n\s*secret:\s*(\S+)', text)
     port, secret = m.group(1), m.group(2)
+    if len(secret) >= 2 and secret[0] == secret[-1] and secret[0] in '"\'':
+        secret = secret[1:-1]
 
     def get(path):
         req = urllib.request.Request(f'http://127.0.0.1:{port}{path}',

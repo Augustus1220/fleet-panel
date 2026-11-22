@@ -23,4 +23,21 @@ masquerade:
 # Keep the secret private; the API binds to localhost only.
 trafficStats:
   listen: 127.0.0.1:29003
-  secret: "TRAFFIC_STATS_SECRET"
+  secret: TRAFFIC_STATS_SECRET  # keep it unquoted, or the panel collector must strip the quotes
+
+# Holders of node credentials must not reach the server itself or
+# private networks through the proxy (anti-SSRF). Reject private,
+# loopback, link-local and CGNAT destinations, incl. domains that
+# resolve to them.
+acl:
+  inline:
+    - reject(0.0.0.0/8)
+    - reject(10.0.0.0/8)
+    - reject(100.64.0.0/10)
+    - reject(127.0.0.0/8)
+    - reject(169.254.0.0/16)
+    - reject(172.16.0.0/12)
+    - reject(192.168.0.0/16)
+    - reject(::1/128)
+    - reject(fc00::/7)
+    - reject(fe80::/10)

@@ -24,6 +24,16 @@ outbounds:
 
 acl:
   inline:
+    - reject(0.0.0.0/8)
+    - reject(10.0.0.0/8)
+    - reject(100.64.0.0/10)
+    - reject(127.0.0.0/8)
+    - reject(169.254.0.0/16)
+    - reject(172.16.0.0/12)
+    - reject(192.168.0.0/16)
+    - reject(::1/128)
+    - reject(fc00::/7)
+    - reject(fe80::/10)
     - webshare(all)
 
 masquerade:
@@ -34,4 +44,4 @@ masquerade:
 
 trafficStats:
   listen: 127.0.0.1:29004
-  secret: "TRAFFIC_STATS_SECRET"
+  secret: TRAFFIC_STATS_SECRET  # keep it unquoted, or the panel collector must strip the quotes
