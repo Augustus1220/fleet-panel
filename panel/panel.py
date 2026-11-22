@@ -80,7 +80,13 @@ def _pw_ver():
         mt = PW_FILE.stat().st_mtime
         if _pw_ver_cache[0] != mt:
             _pw_ver_cache[0] = mt
-            _pw_ver_cache[1] = json.loads(PW_FILE.read_text()).get('ver')
+            rec = json.loads(PW_FILE.read_text())
+            # Fall back to a digest of the stored hash record: a password
+            # file without a version stamp (e.g. restored from a backup)
+            # must still yield a stable version that changes on every
+            # password change -- never None, or no session could validate.
+            _pw_ver_cache[1] = rec.get('ver') or hashlib.sha256(
+                (rec.get('salt', '') + rec.get('hash', '')).encode()).hexdigest()[:16]
         return _pw_ver_cache[1]
     except Exception:
         return None
