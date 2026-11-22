@@ -320,6 +320,13 @@
   "routing": {
     "rules": [
       {
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api",
+        "type": "field"
+      },
+      {
         "type": "field",
         "ip": [
           "0.0.0.0/8",
@@ -358,16 +365,9 @@
           "bittorrent"
         ],
         "type": "field"
-      },
-      {
-        "inboundTag": [
-          "api"
-        ],
-        "outboundTag": "api",
-        "type": "field"
       }
     ],
-    "domainStrategy": "IPIfNonMatch"
+    "domainStrategy": "IPOnDemand"
   },
   "stats": {}
 }
