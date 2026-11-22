@@ -37,7 +37,7 @@ TZ8 = 8 * 3600
 USER_COLORS = {'alice_mac': '#2563eb', 'alice_desktop': '#12b76a',
                'alice_iphone': '#f79009', 'bob': '#9e77ed'}
 PALETTE = ['#0ea5e9', '#ef4444', '#84cc16', '#ec4899']
-SESSION_TTL = 30 * 86400
+SESSION_TTL = 7 * 86400  # absolute cap from login; activity never extends it
 sessions = {}
 fails = {}
 _collect_lock = threading.Lock()
@@ -50,7 +50,9 @@ def _load_sessions():
     try:
         raw = json.loads(SESS_FILE.read_text())
         now = time.time()
-        return {k: v for k, v in raw.items() if isinstance(v, (int, float)) and v > now}
+        return {k: v for k, v in raw.items()
+                if isinstance(v, list) and len(v) == 2
+                and isinstance(v[0], (int, float)) and v[0] > now}
     except Exception:
         return {}
 
@@ -65,6 +67,23 @@ def _save_sessions():
 
 
 sessions.update(_load_sessions())
+
+
+_pw_ver_cache = [0.0, None]
+
+
+def _pw_ver():
+    """Version stamp of the current panel password. Setting a new password
+    bumps it; sessions minted under an older version stop validating on the
+    very next request, with no panel restart."""
+    try:
+        mt = PW_FILE.stat().st_mtime
+        if _pw_ver_cache[0] != mt:
+            _pw_ver_cache[0] = mt
+            _pw_ver_cache[1] = json.loads(PW_FILE.read_text()).get('ver')
+        return _pw_ver_cache[1]
+    except Exception:
+        return None
 
 
 def _snap_ts():
@@ -1130,8 +1149,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             part = part.strip()
             if part.startswith('fleet_sid='):
                 sid = part[len('fleet_sid='):]
-                exp = sessions.get(sid)
-                if exp and exp > time.time():
+                ent = sessions.get(sid)
+                if (isinstance(ent, list) and len(ent) == 2
+                        and ent[0] > time.time()
+                        and ent[1] is not None and ent[1] == _pw_ver()):
                     return sid
                 with _sess_lock:
                     sessions.pop(sid, None)
@@ -1204,7 +1225,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             fails.pop(ip, None)
             sid = secrets.token_urlsafe(32)
             with _sess_lock:
-                sessions[sid] = now + SESSION_TTL
+                sessions[sid] = [now + SESSION_TTL, _pw_ver()]
                 _save_sessions()
             self._send(302, '', extra={'Location': '/',
                                        'Set-Cookie': f'fleet_sid={sid}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age={SESSION_TTL}'})
