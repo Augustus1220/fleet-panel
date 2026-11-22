@@ -441,7 +441,7 @@ def frag_users(snap):
             f'<i data-w="{w_tx:.2f}" style="width:0%;background:{color};opacity:.35;transition-delay:{delay}ms"></i></div>'
             f'<div class="ufoot"><span class="umeta">下行 {fmt_bytes(v["rx"])} · 上行 {fmt_bytes(v["tx"])} · {"在线" if online else "离线"}</span>'
             f'<span class="uspark">{sparkline(b24.get(user, []), 96, 22, color)}</span></div></div>')
-    return '<div class="ulegend2">条形按合计占比 · 深色＝下行 · 浅色＝上行</div>' + ''.join(rows)
+    return ''.join(rows)
 
 
 def frag_perf(snap):
@@ -524,7 +524,7 @@ def frag_webshare(snap):
             + f'<tr><td>周期</td><td>{ws["cycle_start"][:10]} 至 {ws["cycle_end"][:10]} · 剩 {ws["days_left"]:.0f} 天 · {renew} ${ws["monthly_price"]:.2f}/月</td></tr>'
             + f'<tr><td>免费换 IP 次数</td><td>已用 {ws["replacements_used"]} / {ws["replacements_total"]}（剩 {ws["replacements_total"] - ws["replacements_used"]}）</td></tr>'
             + '</table></div>'
-            + f'<div class="muted" style="margin-top:8px">数据更新于 {fmt_time(ws["updated_ts"])} · ' + ('点刷新实时拉取最新数据' if ws.get('live') else '每小时自动同步，点刷新重读最新同步') + '</div>')
+            + f'<div class="muted" style="margin-top:8px">数据更新于 {fmt_time(ws["updated_ts"])}' + '</div>')
 
 FRAGS = {'traffic': frag_overview, 'users': frag_users, 'perf': frag_perf,
          'services': frag_services, 'events': frag_events, 'webshare': frag_webshare}
@@ -881,7 +881,7 @@ def render_panel():
 <title>示例节点 · 状态面板</title><style>{CSS}</style></head>
 <body class="app"><div class="wrap">
 <div class="toprow"><div class="brand"><span class="brandbadge">{icon("chart")}</span><div class="brandtxt"><h1>示例节点 · 状态面板</h1>
-<div class="subtitle">只读面板</div></div></div>
+</div></div>
 <a class="logout" href="/logout">退出</a></div>
 
 <section class="view von" data-view="overview">
@@ -889,7 +889,7 @@ def render_panel():
 </section>
 
 <section class="view" data-view="users">
-<div class="card grow z2">{head('各账号用量（自新节点上线起累计）')}{rfbtn('users')}
+<div class="card grow z2">{head('各账号用量')}{rfbtn('users')}
 <div id="mod-users">{frag_users(snap)}</div></div>
 </section>
 
@@ -898,19 +898,19 @@ def render_panel():
 <div class="segwrap mobonly"><button class="segbtn on" data-cv="users">各账号</button><button class="segbtn" data-cv="total">合计</button></div>
 <div class="rangebtns">
 <button data-range="24h" class="rbtn on">24 小时</button><button data-range="7d" class="rbtn">一周</button><button data-range="30d" class="rbtn">一月</button>
-<span class="muted">点曲线上的点看具体数值</span></div>
+</div>
 <div class="blks">
 <div class="blk-users">
 <div class="legend" id="ulegend"></div>
-<div id="uchart"></div><div class="detail" id="udet">各账号流量 · 点图上的点查看</div>
+<div id="uchart"></div><div class="detail" id="udet"></div>
 </div>
 <div class="blk-total">
 <div class="chartsep"></div>
-<div class="legend">四账号合计（等于上方各账号相加）</div>
-<div id="mchart"></div><div class="detail" id="mdet">四账号合计 · 点图上的点查看</div>
+<div class="legend">四账号合计</div>
+<div id="mchart"></div><div class="detail" id="mdet"></div>
 </div>
 </div>
-<details class="noted"><summary>口径说明</summary><div class="muted" style="margin-top:6px">本卡曲线按账号代理流量统计，与「各账号用量」一致（自新节点上线起算；上线初期未记录时段的累计已按时段均摊）；顶部整机流量是网卡口径（含转发两端），数值更大，属正常。</div></details></div>
+</div>
 </section>
 
 <section class="view" data-view="services">
@@ -928,7 +928,7 @@ def render_panel():
 
 <section class="view" data-view="links">
 <div class="card grow z7">{head('订阅链接（新域名）')}</div>{link_rows}
-<div class="muted" style="margin-top:8px">链接已隐藏显示防外泄，点「复制链接」后直接粘贴到客户端导入；链接即钥匙，请勿外传。</div></div>
+</div>
 </section>
 
 <div class="foot">Fleet Panel</div>
@@ -994,8 +994,8 @@ function renderCharts() {{
   }}).join(' &nbsp; ');
   draw('uchart', 'udet', d.users, d.labels, false);
   draw('mchart', 'mdet', {{'四账号合计': d.total}}, d.labels, true);
-  document.getElementById('udet').textContent = '各账号流量 · 点图上的点查看';
-  document.getElementById('mdet').textContent = '四账号合计 · 点图上的点查看';
+  document.getElementById('udet').textContent = '';
+  document.getElementById('mdet').textContent = '';
 }}
 document.querySelectorAll('.rbtn').forEach(function(b) {{
   b.addEventListener('click', function() {{
