@@ -9,6 +9,7 @@ Read-only with respect to the services it observes.
 """
 import calendar
 import json
+import os
 import re
 import shutil
 import socket
@@ -43,6 +44,7 @@ SVC_LABELS = {
     'reality-ws': '节点服务（Reality·Webshare）',
     'fleet-subscription': '订阅服务',
     'fleet-panel': '本面板',
+    'fleet-panel-collect.timer': '数据采集',
     'fleet-sub-healthcheck.timer': '自愈看门狗',
     'fleet-traffic-account.timer': '流量记账',
 }
@@ -52,6 +54,18 @@ CERT_WARN_LEVELS = [14, 7, 3]
 WS_KEY_FILE = Path('/etc/fleet-panel/webshare.key')
 
 WS_PLACES = {'203.0.113.10': 'Example City · Example ISP'}  # 203.0.113.0/24 is TEST-NET-3, reserved for documentation
+
+# Per-machine overrides from /etc/fleet-panel/collector.json (cert labels,
+# watched services). Absent on a single-machine install, whose defaults
+# are the constants above.
+try:
+    _ovr = json.loads(Path('/etc/fleet-panel/collector.json').read_text())
+    if isinstance(_ovr.get('certs'), dict):
+        CERTS = _ovr['certs']
+    if isinstance(_ovr.get('services'), list):
+        SERVICES = _ovr['services']
+except Exception:
+    pass
 
 
 def _ws_api(path, key):
@@ -376,6 +390,7 @@ def main():
             events.append((now, 'up', '节点服务统计接口已恢复'))
     ev['hy2_ok'] = hy2_ok
 
+    p = perf()
     m_rx, m_tx, m_total, m_expire = machine_traffic()
     services = service_states()
     services.update(port_states())
@@ -450,6 +465,34 @@ def main():
                     break
     ev['certs'] = certs
     ev['cert_warned'] = warned
+    # Resource spikes: CPU / memory / disk suddenly running hot. Entry
+    # and recovery are both logged, with hysteresis so a value hovering
+    # at the threshold does not spam the log. On the first run and on
+    # boot runs only the baseline state is recorded.
+    spike = ev.get('spike', {})
+
+    def _spike(key, pct, enter_at, exit_below, label, jump=False):
+        if pct is None:
+            return
+        if not spike.get(key) and (pct >= enter_at or jump):
+            if not first_run and not booted:
+                events.append((now, 'warn', f'{label}占用突升：{pct:.0f}%'))
+            spike[key] = True
+        elif spike.get(key) and pct < exit_below:
+            if not first_run and not booted:
+                events.append((now, 'up', f'{label}占用已恢复：{pct:.0f}%'))
+            spike[key] = False
+
+    mem_pct = (100.0 * (p['mem_total'] - p['mem_avail']) / p['mem_total']) if p['mem_total'] else None
+    disk_pct = (100.0 * p['disk_used'] / p['disk_total']) if p['disk_total'] else None
+    cpu_jump = (p.get('cpu_pct') is not None and ev.get('prev_cpu') is not None
+                and p['cpu_pct'] - ev['prev_cpu'] >= 40 and p['cpu_pct'] >= 80)
+    _spike('cpu', p.get('cpu_pct'), 90, 85, 'CPU', jump=cpu_jump)
+    _spike('mem', mem_pct, 90, 85, '内存')
+    _spike('disk', disk_pct, 90, 88, '磁盘')
+    ev['spike'] = spike
+    if p.get('cpu_pct') is not None:
+        ev['prev_cpu'] = p['cpu_pct']
     ev['last_run'] = now
     try:
         EV_STATE.write_text(json.dumps(ev))
@@ -460,7 +503,7 @@ def main():
 
     snap = {
         'ts': now,
-        'perf': perf(),
+        'perf': p,
         'machine': {'rx': m_rx, 'tx': m_tx, 'total': m_total, 'expire': m_expire},
         'users': users,
         'online': online,
@@ -486,6 +529,22 @@ def main():
     tmp = SNAP.with_suffix('.tmp')
     tmp.write_text(json.dumps(snap))
     tmp.replace(SNAP)
+
+    # Consistent history copy for an aggregating panel on another
+    # machine (sqlite backup, swapped in atomically, pulled over SSH).
+    try:
+        src = sqlite3.connect(DB)
+        etmp = BASE / 'history-export.tmp.sqlite3'
+        if etmp.exists():
+            etmp.unlink()
+        dst = sqlite3.connect(etmp)
+        src.backup(dst)
+        dst.close()
+        src.close()
+        etmp.replace(BASE / 'history-export.sqlite3')
+        os.chmod(BASE / 'history-export.sqlite3', 0o644)
+    except Exception:
+        pass
 
 
 if __name__ == '__main__':
