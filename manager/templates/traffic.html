@@ -1,0 +1,39 @@
+{% extends "app_shell.html" %}
+{% block title %}流量 · Fleet Panel{% endblock %}
+{% block module_title %}账号流量{% endblock %}
+{% block module_body %}
+<div class="module-body traffic-layout">
+  <div class="traffic-global">
+    <label>周期<select id="period" aria-label="统计周期"><option value="24h">24 小时</option><option value="7d">7 天</option><option value="30d">30 天</option></select></label>
+  </div>
+  <div class="traffic-grid">
+  {% for node in nodes %}
+    <section class="card traffic-pane" data-node="{{ node.node_id }}">
+      <div class="traffic-panel-head">
+        <div class="chart-summary">
+          <h3>{{ node.label }}</h3>
+          <p class="muted">区间合计</p>
+          <p class="chart-value number traffic-total">—</p>
+        </div>
+        <label class="traffic-account-label">账号<select class="account" aria-label="账号"><option value="">全部账号</option></select></label>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-scale" aria-hidden="true"></div>
+        <div class="chart-plot">
+          <svg class="traffic-chart" viewBox="0 0 600 140" preserveAspectRatio="none" tabindex="0" role="img" aria-label="账号流量曲线，使用左右方向键查看数据"></svg>
+          <span class="chart-marker" aria-hidden="true" hidden></span>
+        </div>
+      </div>
+      <div class="chart-axis"><time class="chart-start"></time><time class="chart-end"></time></div>
+      <p class="chart-reading" aria-live="polite"></p>
+      <details class="chart-breakdown">
+        <summary>分段明细</summary>
+        <div class="table"><table><tbody class="traffic-rows"></tbody></table></div>
+      </details>
+    </section>
+  {% else %}
+    <p class="card empty">暂无主机</p>
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}

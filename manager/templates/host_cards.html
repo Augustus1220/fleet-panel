@@ -1,0 +1,89 @@
+{% macro load_color(usage) -%}
+  {%- set value = [0, [100, usage] | min] | max -%}
+  {%- if value <= 60 -%}
+    var(--green)
+  {%- elif value < 75 -%}
+    color-mix(in srgb, var(--green), var(--amber) {{ ((value - 60) / 15 * 100) | round(2) }}%)
+  {%- elif value < 90 -%}
+    color-mix(in srgb, var(--amber), var(--red) {{ ((value - 75) / 15 * 100) | round(2) }}%)
+  {%- else -%}
+    var(--red)
+  {%- endif -%}
+{%- endmacro %}
+{% macro metric(key, name, usage) %}
+{% set ratio = (([0, [100, usage] | min] | max) / 100) if usage is number else 0 %}
+<div class="metric" style="--load-color: {{ load_color(usage) if usage is number else 'var(--muted)' }}">
+  <dt>{{ name }}</dt>
+  <dd class="number"{% if usage is number %} data-motion-key="{{ key }}" data-motion-type="percent" data-motion-value="{{ usage }}"{% endif %}>{% if usage is number %}{{ '%g' | format(usage | round(1)) }}%{% else %}—{% endif %}</dd>
+  <span class="meter" aria-hidden="true"><i style="--fill:{{ ratio }}" data-motion-key="{{ key }}-bar" data-motion-type="meter" data-motion-value="{{ ratio }}"></i></span>
+</div>
+{% endmacro %}
+{% set service_names = {'fleet-hy2': 'HY2 节点', 'fleet-hy2-webshare': 'HY2 住宅出口', 'xray': 'VLESS 节点', 'fleet-subscription': '订阅服务', 'fleet-panel': '轻量面板', 'fleet-panel-manager': '主管理器', 'fleet-panel-collect.timer': '状态采集', 'rak-traffic-account.timer': '流量记账', 'rak-sub-healthcheck.timer': '订阅自愈'} %}
+<div class="host-grid">
+{% for node in nodes %}
+  <article class="card host-card">
+    <header class="card-head">
+      <h3>{{ node.label }}</h3>
+      {% if not node.enabled %}<span class="status">已停用</span>
+      {% elif node.contact_state == 'offline' %}<span class="status bad">上报中断</span>
+      {% elif node.data_state == 'current' %}<span class="status good">正常</span>
+      {% elif node.data_state == 'stale' %}<span class="status warn">采样过期</span>
+      {% else %}<span class="status warn">等待上报</span>{% endif %}
+    </header>
+    <div class="host-meta">{% for tag in node.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
+    {% if node.snapshot %}
+      {% set snap = node.snapshot %}
+      {% set used = snap.machine.rx + snap.machine.tx %}
+      {% set quota = snap.machine.total %}
+      {% set pct = 100 * used / quota if quota else none %}
+      <div class="flow">
+        <div class="flow-copy">
+          <small class="flow-label">本周期流量</small>
+          <strong class="flow-total number" data-motion-key="{{ node.node_id }}-traffic" data-motion-type="bytes" data-motion-value="{{ used }}">{{ used | traffic_bytes }}</strong>
+          {% if quota %}<div class="flow-meta"><small>配额 {{ quota | traffic_bytes }}</small>{% if snap.machine.expire %}<small>{{ clock(snap.machine.expire)[:5] }} 到期</small>{% endif %}</div>{% endif %}
+        </div>
+        {% if pct is not none %}
+        {% set fraction = '<0.1%' if 0 < pct < 0.1 else ('%g' | format(pct | round(1))) ~ '%' %}
+        <div class="ring" style="--used:{{ [100, pct] | min }}%; --load-color: {{ load_color(pct) }}" data-motion-key="{{ node.node_id }}-ring" data-motion-type="ring" data-motion-value="{{ [100, pct] | min }}"><strong class="number" data-motion-key="{{ node.node_id }}-share" data-motion-type="share" data-motion-value="{{ pct }}">{{ fraction }}</strong></div>
+        {% endif %}
+      </div>
+      {% set mem = (100 * (1 - snap.perf.mem_avail / snap.perf.mem_total)) if snap.perf.get('mem_total') and snap.perf.get('mem_avail') is number else none %}
+      {% set disk = (100 * snap.perf.disk_used / snap.perf.disk_total) if snap.perf.get('disk_total') and snap.perf.get('disk_used') is number else none %}
+      <dl class="metrics">
+        {{ metric(node.node_id ~ '-cpu', 'CPU', snap.perf.get('cpu_pct')) }}
+        {{ metric(node.node_id ~ '-memory', '内存', mem) }}
+        {{ metric(node.node_id ~ '-disk', '磁盘', disk) }}
+      </dl>
+    {% else %}
+      <p class="empty">暂无采样</p>
+    {% endif %}
+    <dl class="stamps">
+      <div class="stamp"><dt>最近上报</dt><dd><time>{{ clock(node.last_report_at) }}</time></dd></div>
+      <div class="stamp"><dt>最新采样</dt><dd><time>{{ clock(node.latest_sample_at) }}</time></dd></div>
+    </dl>
+    {% if node.snapshot and (node.snapshot.services or node.snapshot.certs) %}
+    <details class="node-detail" data-panel="{{ node.node_id }}-services">
+      <summary>服务与证书</summary>
+      <div class="detail-cols">
+        {% if node.snapshot.services %}
+        <div><h3>服务</h3><ul class="info-list">
+          {% for name, active in node.snapshot.services.items() %}
+          <li><span>{{ service_names.get(name, name) }}</span><span class="status {{ 'good' if active else 'bad' }}">{{ '正常' if active else '异常' }}</span></li>
+          {% endfor %}
+        </ul></div>
+        {% endif %}
+        {% if node.snapshot.certs %}
+        <div><h3>证书到期</h3><ul class="info-list">
+          {% for name, expires in node.snapshot.certs.items() %}
+          <li><span>{{ name }}</span><time>{{ clock(expires) }}</time></li>
+          {% endfor %}
+        </ul></div>
+        {% endif %}
+      </div>
+    </details>
+    {% endif %}
+  </article>
+{% else %}
+  <p class="card empty">暂无登记主机 · <a href="{{ url_for('manage_nodes') }}">登记主机</a></p>
+{% endfor %}
+</div>

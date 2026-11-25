@@ -291,6 +291,9 @@ for src, dst in [("panel/panel.py", "usr/local/lib/fleet-panel/panel.py"),
     if residential and src == "panel/collect.py":
         text = text.replace("203.0.113.10", residential.split(":", 3)[0])
     write(dst, text, 0o755 if dst.endswith("healthcheck") else 0o644)
+for package in ("common", "node"):
+    for path in sorted((Path(repo) / package).glob("*.py")):
+        write(f"usr/local/lib/fleet-panel/{package}/{path.name}", path.read_text())
 bind = "127.0.0.1" if panel_bind == "loopback" else "0.0.0.0"
 write("etc/fleet-panel/config.json", json.dumps(
     {"cert": "/opt/fleet-hy2/public-tls.crt", "key": "/opt/fleet-hy2/public-tls.key",

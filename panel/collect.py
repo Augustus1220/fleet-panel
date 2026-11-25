@@ -15,6 +15,7 @@ import shutil
 import socket
 import sqlite3
 import subprocess
+import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -23,6 +24,7 @@ BASE = Path('/var/lib/fleet-panel')
 DB = BASE / 'history.sqlite3'
 SNAP = BASE / 'status.json'
 STATE = BASE / 'collector_state.json'
+REPORT_CFG = Path('/etc/fleet-panel/report.json')
 HY2_CONFS = [Path('/opt/fleet-hy2/server.yaml'),
              Path('/opt/fleet-hy2-webshare/server.yaml')]
 SUB_STATE = Path('/var/lib/fleet-subscriptions/traffic_state.json')
@@ -49,7 +51,7 @@ SVC_LABELS = {
     'fleet-traffic-account.timer': '流量记账',
 }
 PORT_PROBES = {'reality': 443, 'reality-ws': 443}
-RESTART_TRACK = ['fleet-hy2', 'fleet-hy2-webshare', 'xray', 'fleet-subscription', 'fleet-panel']
+RESTART_TRACK = ['fleet-hy2', 'fleet-hy2-webshare', 'xray', 'fleet-subscription']
 CERT_WARN_LEVELS = [14, 7, 3]
 WS_KEY_FILE = Path('/etc/fleet-panel/webshare.key')
 
@@ -523,6 +525,21 @@ def main():
     db.execute('DELETE FROM events WHERE ts < ?', (now - KEEP_SECS,))
     rows = db.execute('SELECT ts, kind, text FROM events ORDER BY ts DESC, rowid DESC LIMIT 60').fetchall()
     snap['events'] = [{'ts': t, 'kind': k, 'text': x} for t, k, x in rows]
+    if REPORT_CFG.exists():
+        db.execute('SAVEPOINT monitoring_report')
+        try:
+            from common.monitoring import NODE_ID
+            from node.report import enqueue
+
+            node_id = json.loads(REPORT_CFG.read_text())['node_id']
+            if not isinstance(node_id, str) or not NODE_ID.fullmatch(node_id):
+                raise ValueError('invalid_node_id')
+            enqueue(db, node_id, snap, sorted(events))
+        except (ImportError, ValueError, TypeError, OSError, KeyError, sqlite3.Error) as error:
+            db.execute('ROLLBACK TO monitoring_report')
+            print(f'采集已保存，本次上报入队失败（{type(error).__name__}）', file=sys.stderr)
+        finally:
+            db.execute('RELEASE monitoring_report')
     db.commit()
     db.close()
 

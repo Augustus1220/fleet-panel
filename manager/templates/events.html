@@ -1,0 +1,7 @@
+{% extends "app_shell.html" %}
+{% block title %}事件 · Fleet Panel{% endblock %}
+{% block module_anchor %}events-title{% endblock %}
+{% block module_title %}最近事件{% endblock %}
+{% block module_body %}
+<div class="module-body card events-pane" id="event-feed">{% include "event_list.html" %}</div>
+{% endblock %}

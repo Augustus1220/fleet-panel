@@ -1,0 +1,19 @@
+[Unit]
+Description=Fleet Panel monitoring manager
+After=network.target
+
+[Service]
+User=fleet-panel-manager
+WorkingDirectory=/opt/fleet-panel-manager
+Environment=FLEET_MANAGER_CONFIG=/etc/fleet-panel/manager.json
+StateDirectory=fleet-panel-manager
+StateDirectoryMode=0750
+ExecStart=/opt/fleet-panel-manager/.venv/bin/gunicorn --workers 1 --threads 4 --bind 127.0.0.1:2098 manager.app:create_app()
+Restart=on-failure
+NoNewPrivileges=yes
+ProtectSystem=strict
+PrivateTmp=yes
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+{% macro event_row(event) %}
+<li class="event-row">
+  <span class="event-dot{% if event.kind == 'down' %} bad{% elif event.kind in ('warn', 'restart', 'heal') %} warn{% endif %}" aria-hidden="true"></span>
+  <div>
+    <p class="event-text">{{ event.text }}</p>
+    <p class="event-meta"><time>{{ clock(event.captured_at) }}</time> · {{ event.node_id }}</p>
+  </div>
+</li>
+{% endmacro %}
+{% set filters_q = 'event_date=' ~ (event_page.day or 'all') ~ ('&event_node=' ~ event_node if event_node else '') %}
+<form class="event-filters" method="get" action="{{ url_for('events_panel', _anchor='events-title') }}">
+  <input type="date" name="event_date" value="{{ event_page.day or '' }}" aria-label="按日期筛选事件（UTC+8）" onchange="this.form.requestSubmit()">
+  <select name="event_node" aria-label="按主机筛选事件" onchange="this.form.requestSubmit()">
+    <option value="">全部主机</option>
+    {% for node in event_nodes %}<option value="{{ node.node_id }}"{% if event_node == node.node_id %} selected{% endif %}>{{ node.label }}</option>{% endfor %}
+  </select>
+  <button class="button small">筛选</button>
+  {% if event_page.day %}<a class="button small subtle" href="{{ url_for('events_panel') }}?event_date=all{{ '&event_node=' ~ event_node if event_node else '' }}#events-title">全部日期</a>{% endif %}
+</form>
+{% if event_page.entries %}
+<ul class="events" tabindex="0" aria-label="事件列表">{% for event in event_page.entries %}{{ event_row(event) }}{% endfor %}</ul>
+{% if event_page.pages > 1 %}
+<nav class="event-pager" aria-label="事件分页">
+  {% if event_page.page > 1 %}
+    <a class="button small" rel="prev" href="{{ url_for('events_panel') }}?{{ filters_q }}&event_page={{ event_page.page - 1 }}#events-title">上一页</a>
+  {% else %}<span class="button small" aria-disabled="true">上一页</span>{% endif %}
+  <span class="muted number">{{ event_page.page }} / {{ event_page.pages }} 页</span>
+  {% if event_page.page < event_page.pages %}
+    <a class="button small" rel="next" href="{{ url_for('events_panel') }}?{{ filters_q }}&event_page={{ event_page.page + 1 }}#events-title">下一页</a>
+  {% else %}<span class="button small" aria-disabled="true">下一页</span>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<p class="empty">{{ '当天暂无事件' if event_page.day else '暂无事件' }}</p>
+{% endif %}

@@ -1168,6 +1168,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlsplit(self.path)
         path = parsed.path
+        if path.startswith('/api/v1/'):
+            if not self._session():
+                self._send(401, '{"error":"unauthorized"}', ctype='application/json')
+                return
+            try:
+                from node.local_api import response
+
+                code, body = response(path, parse_qs(parsed.query), BASE, CFG.get('node_id', 'local'))
+            except (ImportError, OSError, ValueError, KeyError, sqlite3.Error):
+                code, body = 503, {'error': 'data_unavailable'}
+            self._send(code, json.dumps(body, ensure_ascii=False), ctype='application/json')
+            return
         if path == '/logout':
             sid = self._session()
             if sid:

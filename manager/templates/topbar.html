@@ -1,0 +1,16 @@
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}">
+    <img class="brand-icon" src="{{ url_for('static', filename='fleet-mark.svg') }}" alt="" width="36" height="36">
+    <h1>Fleet Panel 主机管理</h1>
+  </a>
+  <nav class="primary-nav" aria-label="主导航">
+    {% for endpoint, title in [('index', '总览'), ('traffic_panel', '流量'), ('events_panel', '事件'), ('manage_nodes', '主机管理')] %}
+    {% set current = request.endpoint == endpoint or (endpoint == 'manage_nodes' and request.endpoint in ('register_node', 'rotate_token', 'update_node')) %}
+    <a class="nav-link" href="{{ url_for(endpoint) }}"{% if current %} aria-current="page"{% endif %}>{{ title }}</a>
+    {% endfor %}
+  </nav>
+  <form class="logout" action="{{ url_for('logout') }}" method="post">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="button subtle">退出</button>
+  </form>
+</header>

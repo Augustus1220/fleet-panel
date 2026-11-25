@@ -1,0 +1,20 @@
+{% set workspace_only = request.method == 'GET' and request.headers.get('X-Fleet-View') == 'workspace' %}
+{% extends "workspace_fragment.html" if workspace_only else "base.html" %}
+{% block body_class %}app-view{% endblock %}
+{% block content %}
+{% if not workspace_only %}{% include "topbar.html" %}{% endif %}
+<section class="workspace" aria-labelledby="module-title" data-title="{{ self.title() }}"
+         data-cacheable="{{ 'true' if request.method == 'GET' else 'false' }}">
+  <header class="module-head" id="{% block module_anchor %}module-header{% endblock %}">
+    <h2 id="module-title">{% block module_title %}{% endblock %}</h2>
+    {% block module_actions %}
+    <div class="module-actions">
+      <span class="muted" id="refresh-status" role="status"></span>
+      <button class="button small" id="refresh-panel" type="button">刷新</button>
+    </div>
+    {% endblock %}
+  </header>
+  {% block module_body %}{% endblock %}
+</section>
+{% if not workspace_only %}<script type="module" src="{{ url_for('static', filename='navigation.js') }}"></script>{% endif %}
+{% endblock %}

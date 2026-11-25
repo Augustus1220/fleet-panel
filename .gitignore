@@ -8,10 +8,14 @@ webshare.key
 *.crt
 *.pem
 status.json
-history.sqlite3
+*.sqlite3
+*.sqlite3-*
+manager.json
+report.json
 sessions.json
 links.json
 collector_state.json
 user_traffic_state.json
 events_state.json
 __pycache__/
+.venv/

@@ -53,7 +53,8 @@
 
 ## 6. 面板
 
-1. 装 `panel/panel.py`、`panel/collect.py` 到 `/usr/local/lib/fleet-panel/`；
+1. 装 `panel/panel.py`、`panel/collect.py` 和 `common/`、`node/` 到
+   `/usr/local/lib/fleet-panel/`（目录结构见 [多主机管理](manager.md)）；
 2. `/etc/fleet-panel/config.json`：`{"cert": ..., "key": ..., "port": 2096}`；
 3. `python3 panel/setpw.py` 设置面板密码（从标准输入读，不进 shell 历史）；
 4. 住宅代理的 API key（如需面板展示用量）写入

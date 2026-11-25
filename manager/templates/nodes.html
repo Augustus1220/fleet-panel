@@ -1,0 +1,68 @@
+{% extends "app_shell.html" %}
+{% block title %}主机管理 · Fleet Panel{% endblock %}
+{% block module_title %}主机管理{% endblock %}
+{% block module_actions %}{% endblock %}
+{% block module_body %}
+<div class="module-body manage-pane">
+{% if token %}
+<section class="card notice" aria-labelledby="token-title">
+  <h2 id="token-title">{{ selected }} 的上报凭据</h2>
+  <p class="muted">仅在本页显示。请复制到该节点的 report.json。</p>
+  <input aria-label="上报凭据" class="token" value="{{ token }}" readonly spellcheck="false" autocomplete="off">
+</section>
+{% endif %}
+{% if message %}<p role="alert" class="card notice warn">{{ message }}</p>{% endif %}
+<div class="manage-grid">
+  <section class="registered-nodes" aria-labelledby="registered-title">
+    <header class="section-head"><h2 id="registered-title">已登记主机</h2><small>{{ nodes | length }} 台</small></header>
+    <div class="node-list">
+    {% for node in nodes %}
+      <article class="card">
+        <header class="card-head">
+          <div>
+            <h3>{{ node.label }}</h3>
+            {% if node.label != node.node_id %}<p class="node-id">{{ node.node_id }}</p>{% endif %}
+          </div>
+          <span class="status{% if node.enabled %} good{% endif %}">{{ '上报启用' if node.enabled else '上报停用' }}</span>
+        </header>
+        {% if node.tags %}
+        <div class="host-meta">{% for tag in node.tags.split(', ') %}<span class="tag">{{ tag }}</span>{% endfor %}</div>
+        {% endif %}
+        <details class="node-detail"{% if message and selected == node.node_id %} open{% endif %}>
+          <summary>编辑主机</summary>
+          <form class="node-form" id="edit-{{ node.node_id }}" method="post" action="{{ url_for('update_node', node_id=node.node_id) }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <div class="edit-fields">
+              <label>显示名称<input name="label" required maxlength="80" value="{{ node.label }}"></label>
+              <label>标签<input name="tags" maxlength="200" value="{{ node.tags }}" placeholder="逗号分隔"></label>
+              <label>上报状态<select name="enabled"><option value="1" {% if node.enabled %}selected{% endif %}>启用</option><option value="0" {% if not node.enabled %}selected{% endif %}>停用</option></select></label>
+            </div>
+          </form>
+          <div class="form-actions">
+            <button class="button primary" form="edit-{{ node.node_id }}">保存</button>
+            <form method="post" action="{{ url_for('rotate_token', node_id=node.node_id) }}"
+                  onsubmit="return confirm('重新生成后，旧凭据立即失效。继续吗？')">
+              <input type="hidden" name="csrf" value="{{ csrf }}">
+              <button class="button">重新生成凭据</button>
+            </form>
+          </div>
+        </details>
+      </article>
+    {% else %}
+      <p class="card empty">暂无登记主机</p>
+    {% endfor %}
+    </div>
+  </section>
+  <section class="card register-card" aria-labelledby="register-title">
+    <h2 id="register-title">登记主机</h2>
+    <form class="node-form" method="post" action="{{ url_for('register_node') }}">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label>主机编号<input name="node_id" required pattern="[a-z0-9][a-z0-9\-]{0,47}" maxlength="48" placeholder="node-03"></label>
+      <label>显示名称<input name="label" required maxlength="80"></label>
+      <label>标签<input name="tags" placeholder="逗号分隔" maxlength="200"></label>
+      <button class="button primary">登记</button>
+    </form>
+  </section>
+</div>
+</div>
+{% endblock %}

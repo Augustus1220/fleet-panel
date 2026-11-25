@@ -1,0 +1,16 @@
+[Unit]
+Description=Upload pending Fleet Panel monitoring reports
+After=network-online.target fleet-panel-collect.service
+Wants=network-online.target
+ConditionPathExists=/etc/fleet-panel/report.json
+
+[Service]
+Type=oneshot
+User=fleet-panel-report
+WorkingDirectory=/usr/local/lib/fleet-panel
+ExecStart=/usr/bin/python3 -m node.report
+TimeoutStartSec=40
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/fleet-panel

@@ -22,12 +22,16 @@
 - **状态面板**：单文件、零依赖（Python 标准库），密码登录；流量环形
   表、当前网速、各账号迷你曲线、性能仪表、异常记录、订阅链接集中
   展示；页面自动刷新；
+- **多主机管理（可选）**：各节点沿用标准库采集器，通过 HTTPS 上报；
+  主管理器统一展示状态、分账号流量以及可按日期和主机筛选的事件。
 - **自愈与记账**：订阅服务探针自愈、证书续期监控、异常事件自动记录。
 
 ## 仓库布局
 
 ```
 panel/         面板与采集器（panel.py / collect.py / setpw.py）
+manager/       多主机主管理器（Flask、Gunicorn、SQLite）
+common/、node/ 上报协议、节点上报与单机监控 API（Python 标准库）
 subscription/  订阅服务（server.py）、网卡记账（traffic-account.py）、payload 示例
 templates/     Xray / Hysteria2 / systemd / sysctl / Clash 配置模板
 docs/          架构、统计口径、订阅下发、通道设计、部署步骤、安全审查
@@ -53,6 +57,7 @@ prompts/       给 AI agent 的部署 / 加账号 / 换出口 / 健康检查提�
 - [分订阅下发](docs/subscriptions.md)
 - [通道设计：HY2 与 Reality](docs/channels.md)
 - [部署步骤](docs/deployment.md)
+- [多主机管理](docs/manager.md)
 - [安全审查](docs/security-review.md)
 
 ## License
